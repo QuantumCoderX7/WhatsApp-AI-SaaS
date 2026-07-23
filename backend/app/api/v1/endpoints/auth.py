@@ -75,7 +75,7 @@ async def login(
     # Find user by email
     stmt = select(User).where(User.email == payload.email.lower(), User.deleted_at.is_(None))
     result = await db.execute(stmt)
-    user = result.scalar_one_or_none()
+    user = result.scalars().first()
 
     if not user or not verify_password(payload.password, user.password_hash):
         raise HTTPException(

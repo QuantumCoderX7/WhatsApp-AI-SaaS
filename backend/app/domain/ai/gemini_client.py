@@ -115,15 +115,15 @@ class GeminiClient:
                     tool_result = await executor.execute(tool_req)
                     print(f"[Gemini Tool Result]: {tool_result}")
 
-                    # Append model functionCall to conversation turn history
+                    # Append complete model response (with functionCall & thoughtSignature) to turn history
                     contents.append({
                         "role": "model",
-                        "parts": [{"functionCall": function_call_part}]
+                        "parts": content_parts
                     })
 
-                    # Append functionResponse to conversation turn history
+                    # Append functionResponse turn under role 'user'
                     contents.append({
-                        "role": "function",
+                        "role": "user",
                         "parts": [{
                             "functionResponse": {
                                 "name": tool_req.tool_name,

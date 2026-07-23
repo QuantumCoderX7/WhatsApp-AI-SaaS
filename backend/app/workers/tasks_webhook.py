@@ -37,8 +37,8 @@ async def process_whatsapp_webhook_task(ctx: Dict[str, Any], payload: Dict[str, 
                 
                 # Auto-provision default WhatsApp Account for dev testing if missing
                 if not wa_account:
-                    # Check or create default tenant
-                    tenant_stmt = select(Tenant).limit(1)
+                    # Check or create default tenant (select most recently created tenant)
+                    tenant_stmt = select(Tenant).order_by(Tenant.created_at.desc()).limit(1)
                     res = await session.execute(tenant_stmt)
                     tenant = res.scalar_one_or_none()
 
@@ -128,7 +128,7 @@ async def process_whatsapp_webhook_task(ctx: Dict[str, Any], payload: Dict[str, 
                         conversation_id=conversation.id,
                         chat_history=formatted_history,
                         user_message=content,
-                        business_name=wa_account.tenant.name if wa_account.tenant else "Our Store"
+                        business_name=wa_account.display_phone_number or "Our Store"
                     )
 
                     # 7. Persist AI Response Message

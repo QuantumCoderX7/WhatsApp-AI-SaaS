@@ -56,7 +56,7 @@ class MetaWebhookPayload(BaseModel):
 class MessageCreate(BaseModel):
     conversation_id: UUID
     wamid: Optional[str] = None
-    sender_type: str # CUSTOMER, AI, HUMAN_AGENT, SYSTEM
+    sender_type: str # CUSTOMER, AI, HUMAN, SYSTEM
     content: str
     meta_payload: Optional[Dict[str, Any]] = {}
 
@@ -88,3 +88,6 @@ class ConversationOut(BaseModel):
 
 class HandoffToggleRequest(BaseModel):
     action: str = Field(..., description="'takeover' to escalate to human, 'resume_ai' to re-enable AI")
+
+class SendMessageRequest(BaseModel):
+    content: str = Field(..., min_length=1, description="Message body content to send to customer")

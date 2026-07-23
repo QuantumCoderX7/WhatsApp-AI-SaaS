@@ -21,18 +21,22 @@ class ToolExecutor:
         tool_name = tool_request.tool_name
         args = tool_request.arguments
 
-        if tool_name == "check_inventory":
-            return await self._check_inventory(args.get("sku"))
-        elif tool_name == "reserve_inventory":
-            return await self._reserve_inventory(args.get("sku"), args.get("quantity", 1))
-        elif tool_name == "search_knowledge":
-            return await self._search_knowledge(args.get("query"))
-        elif tool_name == "create_order":
-            return await self._create_order(args.get("sku"), args.get("quantity", 1))
-        elif tool_name == "handoff_human":
-            return await self._handoff_human(args.get("reason", "Customer requested agent escalation"))
-        else:
-            return {"error": f"Unknown tool execution requested: {tool_name}"}
+        try:
+            if tool_name == "check_inventory":
+                return await self._check_inventory(args.get("sku"))
+            elif tool_name == "reserve_inventory":
+                return await self._reserve_inventory(args.get("sku"), args.get("quantity", 1))
+            elif tool_name == "search_knowledge":
+                return await self._search_knowledge(args.get("query"))
+            elif tool_name == "create_order":
+                return await self._create_order(args.get("sku"), args.get("quantity", 1))
+            elif tool_name == "handoff_human":
+                return await self._handoff_human(args.get("reason", "Customer requested agent escalation"))
+            else:
+                return {"error": f"Unknown tool execution requested: {tool_name}"}
+        except Exception as e:
+            print(f"[Tool Execution Exception in {tool_name}]: {e}")
+            return {"status": "error", "message": f"Execution of {tool_name} encountered an issue: {str(e)}"}
 
     async def _check_inventory(self, sku: str) -> Dict[str, Any]:
         """Checks available stock for a product SKU."""

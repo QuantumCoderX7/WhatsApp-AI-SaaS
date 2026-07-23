@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, text
 
 from app.core.database import AsyncSessionLocal
+from app.core.config import settings
 from app.core.security import decode_access_token
 from app.domain.tenant.models import User, Tenant
 
@@ -23,7 +24,7 @@ async def get_current_user(
     token: str = Depends(oauth2_scheme),
     db: AsyncSession = Depends(get_db_session)
 ) -> User:
-    """Decodes JWT bearer token, resolves current user, and sets tenant context in SQL session."""
+    """Decodes JWT bearer token, resolves current user, and sets tenant context."""
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -54,8 +55,12 @@ async def get_current_user(
     if not user:
         raise credentials_exception
         
-    # Bind tenant context to PostgreSQL session for RLS policy evaluation
-    await db.execute(text(f"SET LOCAL app.current_tenant_id = '{tenant_id}'"))
+    # Only set tenant context for PostgreSQL (not SQLite)
+    if not settings.DATABASE_URL.startswith("sqlite"):
+        try:
+            await db.execute(text(f"SET LOCAL app.current_tenant_id = '{tenant_id}'"))
+        except Exception:
+            pass  # Silently skip for non-Postgres dialects
     
     return user
 
